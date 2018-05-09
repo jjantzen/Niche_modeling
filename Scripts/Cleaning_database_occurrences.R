@@ -18,7 +18,13 @@ library(spatstat)
 
 #Write query script
 
-points <- read.csv("./Data/Points_for_plotting.csv", stringsAsFactors = FALSE)
+Taegopogon <- read.csv("./Data/Occurrence_records_by_species/Taegopogon_unique.csv", stringsAsFactors = FALSE)
+
+#Remove duplicates
+unique(Taegopogon)
+
+
+
 
 #Remove points with no environmental data
 
