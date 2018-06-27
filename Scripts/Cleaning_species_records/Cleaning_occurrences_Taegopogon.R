@@ -57,6 +57,9 @@ crop_terrAlt <- crop(terrestrialAltitude, extent(south_america))
 extent(south_america)
 extent(crop_terrAlt)
 
+#Save pruned terrAlt
+writeRaster(crop_terrAlt, "./Layers/cropped_terrAlt.asc")
+
 #Extract points only from South America
 Taegopogon_extract <- extract(crop_terrAlt, Taegopogon_spatial)
 
