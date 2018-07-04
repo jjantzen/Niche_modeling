@@ -97,6 +97,8 @@ head(ordered_points)
 tail(ordered_points)
 
 ordered_points_removed <- ordered_points[-1,]
+ordered_points_removed <- ordered_points_removed[-(nrow(ordered_points_removed)),]
+ordered_points_removed
 
 coordinates(ordered_points_removed) <- c("longitude", "latitude")
 proj4string(ordered_points_removed) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
@@ -106,3 +108,63 @@ plot(ordered_points_removed, add=TRUE, col = "purple")
 
 #Save the clean data
 write.csv(ordered_points_removed, "./Data/Cleaned_occurrences_by_species/Taegopogon_angustifolia_cleaned_occurrences.csv", row.names = F)
+
+
+#### For after adding field collections in (and NYBG specimens)
+mod_Tangust <- read.csv("./Data/Cleaned_occurrences_by_species/Taegopogon_angustifolia_cleaned_occurrences_MOD.csv", stringsAsFactors = FALSE)
+
+mod_Tangust
+mod_Tangust_clean <- coord_impossible(mod_Tangust)
+mod_Tangust
+mod_Tangust_clean
+
+mod_Tangust_clean_spatial <- mod_Tangust_clean
+coordinates(mod_Tangust_clean_spatial) <- c("longitude", "latitude")
+
+crs.geo <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") 
+proj4string(mod_Tangust_clean_spatial) <- crs.geo
+
+#Extract points only from South America
+Tangust_mod_extract <- extract(crop_terrAlt, mod_Tangust_clean_spatial)
+
+#Link complete dataset with extracted point yes/no
+Tangust_mod_extract<- cbind(mod_Tangust_clean, Tangust_mod_extract)
+Tangust_mod_extract
+
+#Remove incomplete cases (those not in extracted dataset)
+clean_Tangust_mod <- Tangust_mod_extract[complete.cases(Tangust_mod_extract[,4]),]
+clean_Tangust_mod
+#Get resolution of raster of environmental data
+rasterResolution <- max(res(terrestrialAltitude))
+rasterResolution
+
+#Reduce resolution
+while(min(nndist(clean_Tangust_mod[,2:3])) < rasterResolution){
+  nnD <- nndist(clean_Tangust_mod[,2:3])
+  clean_Tangust_mod <- clean_Tangust_mod[-(which(min(nnD) == nnD)[1]),]
+}
+
+clean_Tangust_mod
+#####here 
+#Set rownames of clean dataset
+row.names(clean_Tangust_mod) <- seq(nrow(clean_Tangust_mod))
+
+clean_Tangust_mod
+#Check for outliers by plotting
+plot_Tangust_mod <- clean_Tangust_mod
+coordinates(plot_Tangust_mod) <- c("longitude", "latitude")
+proj4string(plot_Tangust_mod) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+
+plot(south_america)
+plot(plot_Tangust_mod, add=TRUE, col = "purple")
+
+ordered_points <- clean_Tangust_mod %>% 
+  arrange(latitude)
+
+ordered_points
+
+ordered_points_removed <- ordered_points[-(nrow(ordered_points)),]
+
+ordered_points_removed
+
+write.csv(ordered_points_removed, "./Data/Cleaned_occurrences_by_species/Aegopogon_angustifolia_modified_postcleaning.csv", row.names = F)

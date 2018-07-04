@@ -107,3 +107,54 @@ plot(ordered_points_removed, add=TRUE, col = "purple")
 
 #Save the clean data
 write.csv(ordered_points_removed[,1:3], "./Data/Cleaned_occurrences_by_species/Talbescens_cleaned_occurrences.csv", row.names = F)
+
+
+#### For after adding field collections in (and NYBG specimens)
+mod_Talb <- read.csv("./Data/Cleaned_occurrences_by_species/Talbescens_cleaned_occurrences_MOD.csv", stringsAsFactors = FALSE)
+
+mod_Talb
+mod_Talb_clean <- coord_impossible(mod_Talb)
+mod_Talb
+mod_Talb_clean
+
+mod_Talb_clean_spatial <- mod_Talb_clean
+coordinates(mod_Talb_clean_spatial) <- c("longitude", "latitude")
+
+crs.geo <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") 
+proj4string(mod_Talb_clean_spatial) <- crs.geo
+
+#Extract points only from South America
+Talb_mod_extract <- extract(crop_terrAlt, mod_Talb_clean_spatial)
+
+#Link complete dataset with extracted point yes/no
+Talb_mod_extract<- cbind(mod_Talb_clean, Talb_mod_extract)
+Talb_mod_extract
+
+#Remove incomplete cases (those not in extracted dataset)
+clean_Talb_mod <- Talb_mod_extract[complete.cases(Talb_mod_extract[,4]),]
+clean_Talb_mod
+#Get resolution of raster of environmental data
+rasterResolution <- max(res(terrestrialAltitude))
+rasterResolution
+
+#Reduce resolution
+while(min(nndist(clean_Talb_mod[,2:3])) < rasterResolution){
+  nnD <- nndist(clean_Talb_mod[,2:3])
+  clean_Talb_mod <- clean_Talb_mod[-(which(min(nnD) == nnD)[1]),]
+}
+
+clean_Talb_mod
+#####here 
+#Set rownames of clean dataset
+row.names(clean_Talb_mod) <- seq(nrow(clean_Talb_mod))
+
+
+#Check for outliers by plotting
+plot_Talb_mod <- clean_Talb_mod
+coordinates(plot_Talb_mod) <- c("longitude", "latitude")
+proj4string(plot_Talb_mod) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+
+plot(south_america)
+plot(plot_Talb_mod, add=TRUE, col = "purple")
+
+write.csv(clean_Talb_mod, "./Data/Cleaned_occurrences_by_species/Albescens_modified_postcleaning.csv", row.names = F)

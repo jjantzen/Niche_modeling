@@ -105,3 +105,55 @@ ordered_points_removed
 
 #Save the clean data
 write.csv(ordered_points_removed[,1:3], "./Data/Cleaned_occurrences_by_species/Tbipenicillata_cleaned_occurrences.csv", row.names = F)
+
+
+
+#### For after adding field collections in (and NYBG specimens)
+mod_Tbipen <- read.csv("./Data/Cleaned_occurrences_by_species/Tbipenicillata_cleaned_occurrences_MOD.csv", stringsAsFactors = FALSE)
+
+mod_Tbipen
+mod_Tbipen_clean <- coord_impossible(mod_Tbipen)
+mod_Tbipen
+mod_Tbipen_clean
+
+mod_Tbipen_clean_spatial <- mod_Tbipen_clean
+coordinates(mod_Tbipen_clean_spatial) <- c("longitude", "latitude")
+
+crs.geo <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") 
+proj4string(mod_Tbipen_clean_spatial) <- crs.geo
+
+#Extract points only from South America
+Tbipen_mod_extract <- extract(crop_terrAlt, mod_Tbipen_clean_spatial)
+
+#Link complete dataset with extracted point yes/no
+Tbipen_mod_extract<- cbind(mod_Tbipen_clean, Tbipen_mod_extract)
+Tbipen_mod_extract
+
+#Remove incomplete cases (those not in extracted dataset)
+clean_Tbipen_mod <- Tbipen_mod_extract[complete.cases(Tbipen_mod_extract[,4]),]
+clean_Tbipen_mod
+#Get resolution of raster of environmental data
+rasterResolution <- max(res(terrestrialAltitude))
+rasterResolution
+
+#Reduce resolution
+while(min(nndist(clean_Tbipen_mod[,2:3])) < rasterResolution){
+  nnD <- nndist(clean_Tbipen_mod[,2:3])
+  clean_Tbipen_mod <- clean_Tbipen_mod[-(which(min(nnD) == nnD)[1]),]
+}
+
+clean_Tbipen_mod
+#####here 
+#Set rownames of clean dataset
+row.names(clean_Tbipen_mod) <- seq(nrow(clean_Tbipen_mod))
+
+
+#Check for outliers by plotting
+plot_Tbipen_mod <- clean_Tbipen_mod
+coordinates(plot_Tbipen_mod) <- c("longitude", "latitude")
+proj4string(plot_Tbipen_mod) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+
+plot(south_america)
+plot(plot_Tbipen_mod, add=TRUE, col = "purple")
+
+write.csv(clean_Tbipen_mod, "./Data/Cleaned_occurrences_by_species/Bipenicillata_modified_postcleaning.csv", row.names = F)

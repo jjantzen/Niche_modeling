@@ -89,3 +89,55 @@ plot(plot_Tbarbigera, add=TRUE, col = "purple")
 
 #Save the clean data
 write.csv(clean_Tbarbigera, "./Data/Cleaned_occurrences_by_species/Tbarbigera_cleaned_occurrences.csv", row.names = F)
+
+
+
+#### For after adding field collections in (and NYBG specimens)
+mod_Tbar <- read.csv("./Data/Cleaned_occurrences_by_species/Tbarbigera_cleaned_occurrences_MOD.csv", stringsAsFactors = FALSE)
+
+mod_Tbar
+mod_Tbar_clean <- coord_impossible(mod_Tbar)
+mod_Tbar
+mod_Tbar_clean
+
+mod_Tbar_clean_spatial <- mod_Tbar_clean
+coordinates(mod_Tbar_clean_spatial) <- c("longitude", "latitude")
+
+crs.geo <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") 
+proj4string(mod_Tbar_clean_spatial) <- crs.geo
+
+#Extract points only from South America
+Tbar_mod_extract <- extract(crop_terrAlt, mod_Tbar_clean_spatial)
+
+#Link complete dataset with extracted point yes/no
+Tbar_mod_extract<- cbind(mod_Tbar_clean, Tbar_mod_extract)
+Tbar_mod_extract
+
+#Remove incomplete cases (those not in extracted dataset)
+clean_Tbar_mod <- Tbar_mod_extract[complete.cases(Tbar_mod_extract[,4]),]
+clean_Tbar_mod
+#Get resolution of raster of environmental data
+rasterResolution <- max(res(terrestrialAltitude))
+rasterResolution
+
+#Reduce resolution
+while(min(nndist(clean_Tbar_mod[,2:3])) < rasterResolution){
+  nnD <- nndist(clean_Tbar_mod[,2:3])
+  clean_Tbar_mod <- clean_Tbar_mod[-(which(min(nnD) == nnD)[1]),]
+}
+
+clean_Tbar_mod
+#####here 
+#Set rownames of clean dataset
+row.names(clean_Tbar_mod) <- seq(nrow(clean_Tbar_mod))
+
+
+#Check for outliers by plotting
+plot_Tbar_mod <- clean_Tbar_mod
+coordinates(plot_Tbar_mod) <- c("longitude", "latitude")
+proj4string(plot_Tbar_mod) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+
+plot(south_america)
+plot(plot_Tbar_mod, add=TRUE, col = "purple")
+
+write.csv(clean_Tbar_mod, "./Data/Cleaned_occurrences_by_species/Barbigera_modified_postcleaning.csv", row.names = F)

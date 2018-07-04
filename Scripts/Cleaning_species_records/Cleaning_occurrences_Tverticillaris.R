@@ -95,3 +95,56 @@ ordered_points_removed <- ordered_points[-c(1:2),]
 
 #Save the clean data
 write.csv(ordered_points_removed, "./Data/Cleaned_occurrences_by_species/Tverticillaris_cleaned_occurrences.csv", row.names = F)
+
+
+
+
+#### For after adding field collections in (and NYBG specimens)
+mod_Tvert <- read.csv("./Data/Cleaned_occurrences_by_species/Tverticillaris_cleaned_occurrences_MOD.csv", stringsAsFactors = FALSE)
+
+mod_Tvert
+mod_Tvert_clean <- coord_impossible(mod_Tvert)
+mod_Tvert
+mod_Tvert_clean
+
+mod_Tvert_clean_spatial <- mod_Tvert_clean
+coordinates(mod_Tvert_clean_spatial) <- c("longitude", "latitude")
+
+crs.geo <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") 
+proj4string(mod_Tvert_clean_spatial) <- crs.geo
+
+#Extract points only from South America
+Tvert_mod_extract <- extract(crop_terrAlt, mod_Tvert_clean_spatial)
+
+#Link complete dataset with extracted point yes/no
+Tvert_mod_extract<- cbind(mod_Tvert_clean, Tvert_mod_extract)
+Tvert_mod_extract
+
+#Remove incomplete cases (those not in extracted dataset)
+clean_Tvert_mod <- Tvert_mod_extract[complete.cases(Tvert_mod_extract[,4]),]
+clean_Tvert_mod
+#Get resolution of raster of environmental data
+rasterResolution <- max(res(terrestrialAltitude))
+rasterResolution
+
+#Reduce resolution
+while(min(nndist(clean_Tvert_mod[,2:3])) < rasterResolution){
+  nnD <- nndist(clean_Tvert_mod[,2:3])
+  clean_Tvert_mod <- clean_Tvert_mod[-(which(min(nnD) == nnD)[1]),]
+}
+
+clean_Tvert_mod
+#####here 
+#Set rownames of clean dataset
+row.names(clean_Tvert_mod) <- seq(nrow(clean_Tvert_mod))
+
+
+#Check for outliers by plotting
+plot_Tvert_mod <- clean_Tvert_mod
+coordinates(plot_Tvert_mod) <- c("longitude", "latitude")
+proj4string(plot_Tvert_mod) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+
+plot(south_america)
+plot(plot_Tvert_mod, add=TRUE, col = "purple")
+
+write.csv(clean_Tvert_mod, "./Data/Cleaned_occurrences_by_species/Verticillaris_modified_postcleaning.csv", row.names = F)

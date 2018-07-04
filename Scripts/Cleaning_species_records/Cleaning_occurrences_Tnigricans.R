@@ -95,3 +95,57 @@ ordered_points_removed <- ordered_points[-5,]
 
 #Save the clean data
 write.csv(ordered_points_removed, "./Data/Cleaned_occurrences_by_species/Tnigricans_cleaned_occurrences.csv", row.names = F)
+
+
+
+
+
+#### For after adding field collections in (and NYBG specimens)
+mod_Tnig <- read.csv("./Data/Cleaned_occurrences_by_species/Tnigricans_cleaned_occurrences_MOD.csv", stringsAsFactors = FALSE)
+
+mod_Tnig
+mod_Tnig_clean <- coord_impossible(mod_Tnig)
+mod_Tnig
+mod_Tnig_clean
+
+mod_Tnig_clean_spatial <- mod_Tnig_clean
+coordinates(mod_Tnig_clean_spatial) <- c("longitude", "latitude")
+
+crs.geo <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") 
+proj4string(mod_Tnig_clean_spatial) <- crs.geo
+
+#Extract points only from South America
+Tnig_mod_extract <- extract(crop_terrAlt, mod_Tnig_clean_spatial)
+
+#Link complete dataset with extracted point yes/no
+Tnig_mod_extract<- cbind(mod_Tnig_clean, Tnig_mod_extract)
+Tnig_mod_extract
+
+#Remove incomplete cases (those not in extracted dataset)
+clean_Tnig_mod <- Tnig_mod_extract[complete.cases(Tnig_mod_extract[,4]),]
+clean_Tnig_mod
+#Get resolution of raster of environmental data
+rasterResolution <- max(res(terrestrialAltitude))
+rasterResolution
+
+#Reduce resolution
+while(min(nndist(clean_Tnig_mod[,2:3])) < rasterResolution){
+  nnD <- nndist(clean_Tnig_mod[,2:3])
+  clean_Tnig_mod <- clean_Tnig_mod[-(which(min(nnD) == nnD)[1]),]
+}
+
+clean_Tnig_mod
+#####here 
+#Set rownames of clean dataset
+row.names(clean_Tnig_mod) <- seq(nrow(clean_Tnig_mod))
+
+
+#Check for outliers by plotting
+plot_Tnig_mod <- clean_Tnig_mod
+coordinates(plot_Tnig_mod) <- c("longitude", "latitude")
+proj4string(plot_Tnig_mod) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+
+plot(south_america)
+plot(plot_Tnig_mod, add=TRUE, col = "purple")
+
+write.csv(clean_Tnig_mod, "./Data/Cleaned_occurrences_by_species/Nigricans_modified_postcleaning.csv", row.names = F)

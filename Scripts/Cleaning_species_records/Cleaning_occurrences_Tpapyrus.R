@@ -90,3 +90,56 @@ plot(plot_Tpapyrus, add=TRUE, col = "purple")
 
 #Save the clean data
 write.csv(clean_Tpapyrus, "./Data/Cleaned_occurrences_by_species/Tpapyrus_cleaned_occurrences.csv", row.names = F)
+
+
+
+
+#### For after adding field collections in (and NYBG specimens)
+mod_Tpap <- read.csv("./Data/Cleaned_occurrences_by_species/Tpapyrus_cleaned_occurrences_MOD.csv", stringsAsFactors = FALSE)
+
+mod_Tpap
+mod_Tpap_clean <- coord_impossible(mod_Tpap)
+mod_Tpap
+mod_Tpap_clean
+
+mod_Tpap_clean_spatial <- mod_Tpap_clean
+coordinates(mod_Tpap_clean_spatial) <- c("longitude", "latitude")
+
+crs.geo <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") 
+proj4string(mod_Tpap_clean_spatial) <- crs.geo
+
+#Extract points only from South America
+Tpap_mod_extract <- extract(crop_terrAlt, mod_Tpap_clean_spatial)
+
+#Link complete dataset with extracted point yes/no
+Tpap_mod_extract<- cbind(mod_Tpap_clean, Tpap_mod_extract)
+Tpap_mod_extract
+
+#Remove incomplete cases (those not in extracted dataset)
+clean_Tpap_mod <- Tpap_mod_extract[complete.cases(Tpap_mod_extract[,4]),]
+clean_Tpap_mod
+#Get resolution of raster of environmental data
+rasterResolution <- max(res(terrestrialAltitude))
+rasterResolution
+
+#Reduce resolution
+while(min(nndist(clean_Tpap_mod[,2:3])) < rasterResolution){
+  nnD <- nndist(clean_Tpap_mod[,2:3])
+  clean_Tpap_mod <- clean_Tpap_mod[-(which(min(nnD) == nnD)[1]),]
+}
+
+clean_Tpap_mod
+#####here 
+#Set rownames of clean dataset
+row.names(clean_Tpap_mod) <- seq(nrow(clean_Tpap_mod))
+
+
+#Check for outliers by plotting
+plot_Tpap_mod <- clean_Tpap_mod
+coordinates(plot_Tpap_mod) <- c("longitude", "latitude")
+proj4string(plot_Tpap_mod) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+
+plot(south_america)
+plot(plot_Tpap_mod, add=TRUE, col = "purple")
+
+write.csv(clean_Tpap_mod, "./Data/Cleaned_occurrences_by_species/Papyrus_modified_postcleaning.csv", row.names = F)

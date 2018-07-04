@@ -89,3 +89,56 @@ plot(plot_Tdissitiflora, add=TRUE, col = "purple")
 
 #Save the clean data
 write.csv(clean_Tdissitiflora, "./Data/Cleaned_occurrences_by_species/Tdissitiflora_cleaned_occurrences.csv", row.names = F)
+
+
+
+
+#### For after adding field collections in (and NYBG specimens)
+mod_Tdiss <- read.csv("./Data/Cleaned_occurrences_by_species/Tdissitiflora_cleaned_occurrences_MOD.csv", stringsAsFactors = FALSE)
+
+mod_Tdiss
+mod_Tdiss_clean <- coord_impossible(mod_Tdiss)
+mod_Tdiss
+mod_Tdiss_clean
+
+mod_Tdiss_clean_spatial <- mod_Tdiss_clean
+coordinates(mod_Tdiss_clean_spatial) <- c("longitude", "latitude")
+
+crs.geo <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") 
+proj4string(mod_Tdiss_clean_spatial) <- crs.geo
+
+#Extract points only from South America
+Tdiss_mod_extract <- extract(crop_terrAlt, mod_Tdiss_clean_spatial)
+
+#Link complete dataset with extracted point yes/no
+Tdiss_mod_extract<- cbind(mod_Tdiss_clean, Tdiss_mod_extract)
+Tdiss_mod_extract
+
+#Remove incomplete cases (those not in extracted dataset)
+clean_Tdiss_mod <- Tdiss_mod_extract[complete.cases(Tdiss_mod_extract[,4]),]
+clean_Tdiss_mod
+#Get resolution of raster of environmental data
+rasterResolution <- max(res(terrestrialAltitude))
+rasterResolution
+
+#Reduce resolution
+while(min(nndist(clean_Tdiss_mod[,2:3])) < rasterResolution){
+  nnD <- nndist(clean_Tdiss_mod[,2:3])
+  clean_Tdiss_mod <- clean_Tdiss_mod[-(which(min(nnD) == nnD)[1]),]
+}
+
+clean_Tdiss_mod
+#####here 
+#Set rownames of clean dataset
+row.names(clean_Tdiss_mod) <- seq(nrow(clean_Tdiss_mod))
+
+
+#Check for outliers by plotting
+plot_Tdiss_mod <- clean_Tdiss_mod
+coordinates(plot_Tdiss_mod) <- c("longitude", "latitude")
+proj4string(plot_Tdiss_mod) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+
+plot(south_america)
+plot(plot_Tdiss_mod, add=TRUE, col = "purple")
+
+write.csv(clean_Tdiss_mod, "./Data/Cleaned_occurrences_by_species/Dissitiflora_modified_postcleaning.csv", row.names = F)

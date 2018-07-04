@@ -89,3 +89,55 @@ plot(plot_Tfraterna, add=TRUE, col = "purple")
 
 #Save the clean data
 write.csv(clean_Tfraterna, "./Data/Cleaned_occurrences_by_species/Tfraterna_cleaned_occurrences.csv", row.names = F)
+
+
+
+#### For after adding field collections in (and NYBG specimens)
+mod_Tfrat <- read.csv("./Data/Cleaned_occurrences_by_species/Tfraterna_cleaned_occurrences_MOD.csv", stringsAsFactors = FALSE)
+
+mod_Tfrat
+mod_Tfrat_clean <- coord_impossible(mod_Tfrat)
+mod_Tfrat
+mod_Tfrat_clean
+
+mod_Tfrat_clean_spatial <- mod_Tfrat_clean
+coordinates(mod_Tfrat_clean_spatial) <- c("longitude", "latitude")
+
+crs.geo <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") 
+proj4string(mod_Tfrat_clean_spatial) <- crs.geo
+
+#Extract points only from South America
+Tfrat_mod_extract <- extract(crop_terrAlt, mod_Tfrat_clean_spatial)
+
+#Link complete dataset with extracted point yes/no
+Tfrat_mod_extract<- cbind(mod_Tfrat_clean, Tfrat_mod_extract)
+Tfrat_mod_extract
+
+#Remove incomplete cases (those not in extracted dataset)
+clean_Tfrat_mod <- Tfrat_mod_extract[complete.cases(Tfrat_mod_extract[,4]),]
+clean_Tfrat_mod
+#Get resolution of raster of environmental data
+rasterResolution <- max(res(terrestrialAltitude))
+rasterResolution
+
+#Reduce resolution
+while(min(nndist(clean_Tfrat_mod[,2:3])) < rasterResolution){
+  nnD <- nndist(clean_Tfrat_mod[,2:3])
+  clean_Tfrat_mod <- clean_Tfrat_mod[-(which(min(nnD) == nnD)[1]),]
+}
+
+clean_Tfrat_mod
+#####here 
+#Set rownames of clean dataset
+row.names(clean_Tfrat_mod) <- seq(nrow(clean_Tfrat_mod))
+
+
+#Check for outliers by plotting
+plot_Tfrat_mod <- clean_Tfrat_mod
+coordinates(plot_Tfrat_mod) <- c("longitude", "latitude")
+proj4string(plot_Tfrat_mod) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+
+plot(south_america)
+plot(plot_Tfrat_mod, add=TRUE, col = "purple")
+
+write.csv(clean_Tfrat_mod, "./Data/Cleaned_occurrences_by_species/Fraterna_modified_postcleaning.csv", row.names = F)

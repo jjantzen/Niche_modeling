@@ -95,3 +95,55 @@ ordered_points
 
 #Save the clean data
 write.csv(clean_Tllanorum, "./Data/Cleaned_occurrences_by_species/Tllanorum_cleaned_occurrences.csv", row.names = F)
+
+
+
+#### For after adding field collections in (and NYBG specimens)
+mod_Tllan <- read.csv("./Data/Cleaned_occurrences_by_species/Tllanorum_cleaned_occurrences_MOD.csv", stringsAsFactors = FALSE)
+
+mod_Tllan
+mod_Tllan_clean <- coord_impossible(mod_Tllan)
+mod_Tllan
+mod_Tllan_clean
+
+mod_Tllan_clean_spatial <- mod_Tllan_clean
+coordinates(mod_Tllan_clean_spatial) <- c("longitude", "latitude")
+
+crs.geo <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") 
+proj4string(mod_Tllan_clean_spatial) <- crs.geo
+
+#Extract points only from South America
+Tllan_mod_extract <- extract(crop_terrAlt, mod_Tllan_clean_spatial)
+
+#Link complete dataset with extracted point yes/no
+Tllan_mod_extract<- cbind(mod_Tllan_clean, Tllan_mod_extract)
+Tllan_mod_extract
+
+#Remove incomplete cases (those not in extracted dataset)
+clean_Tllan_mod <- Tllan_mod_extract[complete.cases(Tllan_mod_extract[,4]),]
+clean_Tllan_mod
+#Get resolution of raster of environmental data
+rasterResolution <- max(res(terrestrialAltitude))
+rasterResolution
+
+#Reduce resolution
+while(min(nndist(clean_Tllan_mod[,2:3])) < rasterResolution){
+  nnD <- nndist(clean_Tllan_mod[,2:3])
+  clean_Tllan_mod <- clean_Tllan_mod[-(which(min(nnD) == nnD)[1]),]
+}
+
+clean_Tllan_mod
+#####here 
+#Set rownames of clean dataset
+row.names(clean_Tllan_mod) <- seq(nrow(clean_Tllan_mod))
+
+
+#Check for outliers by plotting
+plot_Tllan_mod <- clean_Tllan_mod
+coordinates(plot_Tllan_mod) <- c("longitude", "latitude")
+proj4string(plot_Tllan_mod) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+
+plot(south_america)
+plot(plot_Tllan_mod, add=TRUE, col = "purple")
+
+write.csv(clean_Tllan_mod, "./Data/Cleaned_occurrences_by_species/Llanorum_modified_postcleaning.csv", row.names = F)

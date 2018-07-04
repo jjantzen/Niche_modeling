@@ -81,7 +81,7 @@ while(min(nndist(clean_Taspera[,2:3])) < rasterResolution){
 #Set rownames of clean dataset
 row.names(clean_Taspera) <- seq(nrow(clean_Taspera))
 
-
+clean_Taspera
 #Check for outliers by plotting
 plot_Taspera <- clean_Taspera
 coordinates(plot_Taspera) <- c("longitude", "latitude")
@@ -93,3 +93,58 @@ plot(plot_Taspera, add=TRUE, col = "purple")
 
 #Save the clean data
 write.csv(clean_Taspera[,1:3], "./Data/Cleaned_occurrences_by_species/Taspera_cleaned_occurrences.csv", row.names = F)
+
+
+
+#### For after adding field collections in (and NYBG specimens)
+mod_Tasp <- read.csv("./Data/Cleaned_occurrences_by_species/Taspera_cleaned_occurrences_MOD.csv", stringsAsFactors = FALSE)
+
+mod_Tasp
+mod_Tasp_clean <- coord_impossible(mod_Tasp)
+mod_Tasp
+mod_Tasp_clean
+
+mod_Tasp_clean_spatial <- mod_Tasp_clean
+coordinates(mod_Tasp_clean_spatial) <- c("longitude", "latitude")
+
+crs.geo <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") 
+proj4string(mod_Tasp_clean_spatial) <- crs.geo
+
+#Extract points only from South America
+Tasp_mod_extract <- extract(crop_terrAlt, mod_Tasp_clean_spatial)
+
+#Link complete dataset with extracted point yes/no
+Tasp_mod_extract<- cbind(mod_Tasp_clean, Tasp_mod_extract)
+Tasp_mod_extract
+
+#Remove incomplete cases (those not in extracted dataset)
+clean_Tasp_mod <- Tasp_mod_extract[complete.cases(Tasp_mod_extract[,4]),]
+clean_Tasp_mod
+#Get resolution of raster of environmental data
+rasterResolution <- max(res(terrestrialAltitude))
+rasterResolution
+
+#Reduce resolution
+while(min(nndist(clean_Tasp_mod[,2:3])) < rasterResolution){
+  nnD <- nndist(clean_Tasp_mod[,2:3])
+  clean_Tasp_mod <- clean_Tasp_mod[-(which(min(nnD) == nnD)[1]),]
+}
+
+
+#####here 
+#Set rownames of clean dataset
+row.names(clean_Tasp_mod) <- seq(nrow(clean_Tasp_mod))
+clean_Tasp_mod
+
+#Check for outliers by plotting
+plot_Tasp_mod <- clean_Tasp_mod
+coordinates(plot_Tasp_mod) <- c("longitude", "latitude")
+proj4string(plot_Tasp_mod) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+
+plot(south_america)
+plot(plot_Tasp_mod, add=TRUE, col = "purple")
+
+
+
+
+write.csv(clean_Tasp_mod, "./Data/Cleaned_occurrences_by_species/Aspera_modified_postcleaning.csv", row.names = F)
