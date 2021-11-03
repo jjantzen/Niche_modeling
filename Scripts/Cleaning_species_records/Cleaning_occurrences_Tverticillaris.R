@@ -121,7 +121,7 @@ Tvert_mod_extract<- cbind(mod_Tvert_clean, Tvert_mod_extract)
 Tvert_mod_extract
 
 #Remove incomplete cases (those not in extracted dataset)
-clean_Tvert_mod <- Tvert_mod_extract[complete.cases(Tvert_mod_extract[,4]),]
+clean_Tvert_mod <- Tvert_mod_extract[complete.cases(Tvert_mod_extract[,5]),]
 clean_Tvert_mod
 #Get resolution of raster of environmental data
 rasterResolution <- max(res(terrestrialAltitude))

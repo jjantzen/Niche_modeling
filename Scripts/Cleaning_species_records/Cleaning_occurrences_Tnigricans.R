@@ -122,7 +122,7 @@ Tnig_mod_extract<- cbind(mod_Tnig_clean, Tnig_mod_extract)
 Tnig_mod_extract
 
 #Remove incomplete cases (those not in extracted dataset)
-clean_Tnig_mod <- Tnig_mod_extract[complete.cases(Tnig_mod_extract[,4]),]
+clean_Tnig_mod <- Tnig_mod_extract[complete.cases(Tnig_mod_extract[,5]),]
 clean_Tnig_mod
 #Get resolution of raster of environmental data
 rasterResolution <- max(res(terrestrialAltitude))

@@ -116,7 +116,7 @@ Tmel_mod_extract<- cbind(mod_Tmel_clean, Tmel_mod_extract)
 Tmel_mod_extract
 
 #Remove incomplete cases (those not in extracted dataset)
-clean_Tmel_mod <- Tmel_mod_extract[complete.cases(Tmel_mod_extract[,4]),]
+clean_Tmel_mod <- Tmel_mod_extract[complete.cases(Tmel_mod_extract[,5]),]
 clean_Tmel_mod
 #Get resolution of raster of environmental data
 rasterResolution <- max(res(terrestrialAltitude))

@@ -15,6 +15,25 @@ NW_res
 
 crs(soil_ph) <- crs.geo
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ph_crop <- crop(soil_ph, extent(NW_res))
 
 ph_resamp <- resample(ph_crop, NW_res)

@@ -96,7 +96,10 @@ write.csv(clean_Tbarbigera, "./Data/Cleaned_occurrences_by_species/Tbarbigera_cl
 mod_Tbar <- read.csv("./Data/Cleaned_occurrences_by_species/Tbarbigera_cleaned_occurrences_MOD.csv", stringsAsFactors = FALSE)
 
 mod_Tbar
-mod_Tbar_clean <- coord_impossible(mod_Tbar)
+colnames(mod_Tbar) <- c("name", "lat", "lon", "extract", "X")
+mod_Tbar_clean <- coord_impossible(mod_Tbar, lon = "lon")
+head(mod_Tbar)
+
 mod_Tbar
 mod_Tbar_clean
 
@@ -114,7 +117,7 @@ Tbar_mod_extract<- cbind(mod_Tbar_clean, Tbar_mod_extract)
 Tbar_mod_extract
 
 #Remove incomplete cases (those not in extracted dataset)
-clean_Tbar_mod <- Tbar_mod_extract[complete.cases(Tbar_mod_extract[,4]),]
+clean_Tbar_mod <- Tbar_mod_extract[complete.cases(Tbar_mod_extract[,6]),]
 clean_Tbar_mod
 #Get resolution of raster of environmental data
 rasterResolution <- max(res(terrestrialAltitude))

@@ -120,7 +120,7 @@ Tllan_mod_extract<- cbind(mod_Tllan_clean, Tllan_mod_extract)
 Tllan_mod_extract
 
 #Remove incomplete cases (those not in extracted dataset)
-clean_Tllan_mod <- Tllan_mod_extract[complete.cases(Tllan_mod_extract[,4]),]
+clean_Tllan_mod <- Tllan_mod_extract[complete.cases(Tllan_mod_extract[,5]),]
 clean_Tllan_mod
 #Get resolution of raster of environmental data
 rasterResolution <- max(res(terrestrialAltitude))

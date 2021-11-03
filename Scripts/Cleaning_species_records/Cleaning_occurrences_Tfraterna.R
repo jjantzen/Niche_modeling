@@ -114,7 +114,7 @@ Tfrat_mod_extract<- cbind(mod_Tfrat_clean, Tfrat_mod_extract)
 Tfrat_mod_extract
 
 #Remove incomplete cases (those not in extracted dataset)
-clean_Tfrat_mod <- Tfrat_mod_extract[complete.cases(Tfrat_mod_extract[,4]),]
+clean_Tfrat_mod <- Tfrat_mod_extract[complete.cases(Tfrat_mod_extract[,5]),]
 clean_Tfrat_mod
 #Get resolution of raster of environmental data
 rasterResolution <- max(res(terrestrialAltitude))
@@ -131,7 +131,7 @@ clean_Tfrat_mod
 #Set rownames of clean dataset
 row.names(clean_Tfrat_mod) <- seq(nrow(clean_Tfrat_mod))
 
-
+clean_Tfrat_mod
 #Check for outliers by plotting
 plot_Tfrat_mod <- clean_Tfrat_mod
 coordinates(plot_Tfrat_mod) <- c("longitude", "latitude")

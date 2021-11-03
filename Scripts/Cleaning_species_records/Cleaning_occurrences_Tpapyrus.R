@@ -116,7 +116,7 @@ Tpap_mod_extract<- cbind(mod_Tpap_clean, Tpap_mod_extract)
 Tpap_mod_extract
 
 #Remove incomplete cases (those not in extracted dataset)
-clean_Tpap_mod <- Tpap_mod_extract[complete.cases(Tpap_mod_extract[,4]),]
+clean_Tpap_mod <- Tpap_mod_extract[complete.cases(Tpap_mod_extract[,5]),]
 clean_Tpap_mod
 #Get resolution of raster of environmental data
 rasterResolution <- max(res(terrestrialAltitude))

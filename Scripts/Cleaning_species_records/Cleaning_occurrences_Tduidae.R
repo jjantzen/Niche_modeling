@@ -116,7 +116,7 @@ Tduid_mod_extract<- cbind(mod_Tduid_clean, Tduid_mod_extract)
 Tduid_mod_extract
 
 #Remove incomplete cases (those not in extracted dataset)
-clean_Tduid_mod <- Tduid_mod_extract[complete.cases(Tduid_mod_extract[,4]),]
+clean_Tduid_mod <- Tduid_mod_extract[complete.cases(Tduid_mod_extract[,5]),]
 clean_Tduid_mod
 #Get resolution of raster of environmental data
 rasterResolution <- max(res(terrestrialAltitude))
